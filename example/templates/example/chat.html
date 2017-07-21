@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Django Channels</title>
+</head>
+<body>
+<div style="text-align: center;margin-top: 50px">
+    <input id="message" type="text" style="width: 300px" placeholder="输入消息">
+    <button id="send-message" style="width:80px;margin-left:20px;">发送</button>
+</div>
+<table id="show-message" style="width: 410px;margin: 0 auto;margin-top: 10px">
+    <tr>
+        <td style="text-align: center; border-bottom:1px dashed #000;"><strong>聊天记录</strong></td>
+    </tr>
+</table>
+</body>
+<script src="//code.jquery.com/jquery-3.1.1.min.js"></script>
+<script>
+    var socket = new WebSocket('ws://' + window.location.host + '/users/');
+    if (socket.readyState == WebSocket.OPEN) {
+        socket.onopen();
+    }
+    socket.onmessage = function (message) {
+        var data = JSON.parse(message.data);
+        updateLog("机器人", data["msg"]);
+        $("#message").val("");
+        $("#message").focus();
+
+    };
+    $("#send-message").click(function () {
+        var inputText = $("#message").val();
+        if (typeof(inputText) == "undefined" || inputText.length < 1) {
+            alert("没有输入信息");
+        }
+        else {
+            var msg = {"text": inputText};
+            socket.send(JSON.stringify(msg));
+            updateLog("你", inputText);
+        }
+    });
+    function updateLog(name, message) {
+        var chat = $("#show-message");
+        var ele = "<tr><td>" + name + ": " + message + "</td></tr>"
+        chat.append(ele);
+    }
+</script>
+</html>
